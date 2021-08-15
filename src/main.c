@@ -3,14 +3,15 @@
 void init_player()
 {
     Image img = LoadImage("rsc/bird.png");
-    main_player.x = 50;
-    main_player.y = 50;
+   
     main_player.width = 75;
     main_player.height = 75;
     main_player.tex2D = LoadTextureFromImage(img);
     UnloadImage(img);
     main_player.tex2D.width = main_player.width;
     main_player.tex2D.height = main_player.height;
+    main_player.x = (WIDTH-main_player.width)/2;
+    main_player.y = (HEIGHT-main_player.height)/2;
 }
 void init_pipes()
 {
@@ -18,7 +19,7 @@ void init_pipes()
     for(int i = 0;i< PIPES_COUNT;i++)
     {
         pipes[i].tex2D = LoadTextureFromImage(pipe_texture);
-        pipes[i].x = WIDTH + pipes[i].tex2D.width + DISTANCE_OF_PIPES + 100* i;
+        pipes[i].x = WIDTH + DISTANCE_OF_PIPES * i;
         pipes[i].y = 0;
 
     }
@@ -50,14 +51,38 @@ void unload_textures()
         UnloadTexture(pipes[i].tex2D);
     UnloadTexture(main_player.tex2D);
 }
-void takeInput()
+void take_input()
 {
     if(IsKeyDown(KEY_SPACE))
     {
-        main_player.y -=2;
+        main_player.y -=6;
     }else
     {
-        main_player.y++;
+        main_player.y+=3;
+    }
+}
+void death()
+{
+    in_game = false;
+    init_player();
+    init_pipes();
+}
+void check_collision()
+{
+    if(HEIGHT <= main_player.y || main_player.y + main_player.tex2D.height < 0)
+    {
+        death();
+    }
+    for(int i = 0;i < PIPES_COUNT;i++)
+    {
+        Rectangle _player = (Rectangle){main_player.x,main_player.y,main_player.width,main_player.height};
+        Rectangle _pipe = (Rectangle){pipes[i].x,pipes[i].y,pipes[i].tex2D.width,pipes[i].tex2D.height};
+
+        if(CheckCollisionRecs(_player,_pipe))
+        {
+            death();
+            break;
+        }
     }
 }
 int main()
@@ -70,13 +95,27 @@ int main()
 
     while(!WindowShouldClose())
     {
-        takeInput();
-        move_pipes();
-        BeginDrawing();
-            ClearBackground((Color){255,255,255,0});
-            draw_pipes();
-            DrawTexture(main_player.tex2D,main_player.x,main_player.y,WHITE);
-        EndDrawing();
+        if(in_game == true)
+        {
+            take_input();
+            move_pipes();
+            check_collision();
+            BeginDrawing();
+                ClearBackground((Color){255,255,255,0});
+                draw_pipes();
+                DrawTexture(main_player.tex2D,main_player.x,main_player.y,WHITE);
+            EndDrawing();
+        }else
+        {
+            BeginDrawing();
+            ClearBackground(WHITE);
+                DrawText("Ugly Bird",WIDTH/2,HEIGHT/2,25,BLACK);
+                DrawText("Press Space To Start",WIDTH/2-50,HEIGHT/2+50,25,BLACK);
+                if(IsKeyPressed(KEY_SPACE))
+                    in_game = true;
+            EndDrawing();
+        }
+       
     }
     unload_textures();
 }
