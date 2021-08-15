@@ -1,5 +1,13 @@
 #include "defs.h"
-
+void init_window()
+{
+    InitWindow(WIDTH,HEIGHT,"Ugly Bird [ C ]");
+    SetTargetFPS(60);
+    HideCursor();
+    Image icon = LoadImage("rsc/icon.png");
+    SetWindowIcon(icon);
+    UnloadImage(icon);
+}
 void init_player()
 {
     Image img = LoadImage("rsc/bird.png");
@@ -20,7 +28,13 @@ void init_pipes()
     {
         pipes[i].tex2D = LoadTextureFromImage(pipe_texture);
         pipes[i].x = WIDTH + DISTANCE_OF_PIPES * i;
-        pipes[i].y = 0;
+        if(i%2 == 0)
+        {
+            pipes[i].y = 0;
+        }else
+        {
+            pipes[i].y = HEIGHT - pipes[i].tex2D.height;
+        }
 
     }
     UnloadImage(pipe_texture);
@@ -87,9 +101,7 @@ void check_collision()
 }
 int main()
 {
-    InitWindow(WIDTH,HEIGHT,"[ C ] Ugly Bird");
-    SetTargetFPS(60);
-
+    init_window();
     init_player();
     init_pipes();
 
